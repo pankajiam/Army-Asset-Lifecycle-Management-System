@@ -1,0 +1,17 @@
+# Python
+backend/venv/
+**/__pycache__/
+*.py[cod]
+
+# Environment variables
+backend/.env
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pytest
+.pytest_cache/
