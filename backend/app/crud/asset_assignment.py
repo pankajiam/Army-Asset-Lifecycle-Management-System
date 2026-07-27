@@ -97,3 +97,51 @@ def return_asset(
     db.refresh(assignment)
 
     return assignment
+
+
+def transfer_asset(
+    db: Session,
+    asset_id: int,
+    new_user_id: int,
+    transfer_condition: str
+):
+    assignment = (
+        db.query(AssetAssignment)
+        .filter(
+            AssetAssignment.asset_id == asset_id,
+            AssetAssignment.returned_at == None
+        )
+        .first()
+    )
+
+    if not assignment:
+        return None
+
+    new_user = (
+        db.query(User)
+        .filter(
+            User.user_id == new_user_id
+        )
+        .first()
+    )
+
+    if not new_user:
+        return "user_not_found"
+
+    if assignment.user_id == new_user_id:
+        return "same_user"
+
+    assignment.returned_at = func.now()
+    assignment.return_condition = transfer_condition
+
+    new_assignment = AssetAssignment(
+        asset_id=asset_id,
+        user_id=new_user_id,
+        issue_condition=transfer_condition
+    )
+
+    db.add(new_assignment)
+    db.commit()
+    db.refresh(new_assignment)
+
+    return new_assignment

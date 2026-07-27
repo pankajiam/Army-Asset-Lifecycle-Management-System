@@ -5,12 +5,14 @@ from app.db.database import get_db
 from app.schemas.asset_assignment import (
     AssetIssue,
     AssetReturn,
+    AssetTransfer,
     AssignmentResponse
 )
 
 from app.crud.asset_assignment import (
     issue_asset,
-    return_asset
+    return_asset,
+    transfer_asset
 )
 
 router = APIRouter(
@@ -68,5 +70,39 @@ def return_asset_api(
             status_code=404,
             detail="No active assignment found"
         )
+
+    return assignment
+
+@router.post(
+    "/transfer",
+    response_model=AssignmentResponse
+)
+def transfer_asset_api(
+    request: AssetTransfer,
+    db: Session = Depends(get_db)
+):
+    assignment = transfer_asset(
+        db=db,
+        asset_id=request.asset_id,
+        new_user_id=request.new_user_id,
+        transfer_condition=request.transfer_condition
+    )
+
+    if assignment is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No active assignment found"
+        )
+
+    if assignment == "user_not_found":
+        raise HTTPException(
+            status_code=404,
+            detail="New user not found"
+        )
+    if assignment == "same_user":
+        raise HTTPException(
+            status_code=400,
+            detail="Asset is already assigned to this user"
+    )
 
     return assignment
