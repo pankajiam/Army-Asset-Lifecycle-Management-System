@@ -6,6 +6,14 @@ from sqlalchemy import text
 from app.db.database import Base, engine
 
 from app.api.user import router as user_router
+from app.api.asset import router as asset_router
+from app.api.asset_assignment import (
+    router as assignment_router
+)
+
+import app.models.asset
+import app.models.asset_assignment
+
 
 app = FastAPI(
     title="Army Asset Lifecycle Management System",
@@ -24,6 +32,8 @@ async def log_requests(request: Request, call_next):
     return response
 
 app.include_router(user_router)
+app.include_router(asset_router)
+app.include_router(assignment_router)
 
 Base.metadata.create_all(bind=engine)
 
