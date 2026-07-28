@@ -12,7 +12,8 @@ from app.schemas.asset_assignment import (
 from app.crud.asset_assignment import (
     issue_asset,
     return_asset,
-    transfer_asset
+    transfer_asset,
+    get_asset_history
 )
 
 router = APIRouter(
@@ -106,3 +107,15 @@ def transfer_asset_api(
     )
 
     return assignment
+
+@router.get("/history/{asset_id}", response_model=list[AssignmentResponse])
+def asset_history(
+    asset_id: int,
+    db: Session = Depends(get_db)
+):
+    history = get_asset_history(
+        db=db,
+        asset_id=asset_id
+    )
+
+    return history

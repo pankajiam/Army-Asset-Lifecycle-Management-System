@@ -145,3 +145,20 @@ def transfer_asset(
     db.refresh(new_assignment)
 
     return new_assignment
+
+def get_asset_history(
+    db: Session,
+    asset_id: int
+):
+    history = (
+        db.query(AssetAssignment)
+        .filter(
+            AssetAssignment.asset_id == asset_id
+        )
+        .order_by(
+            AssetAssignment.issued_at
+        )
+        .all()
+    )
+
+    return history

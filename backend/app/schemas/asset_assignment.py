@@ -12,6 +12,7 @@ class AssignmentResponse(BaseModel):
     assignment_id: int
     asset_id: int
     user_id: int
+    issued_at: datetime
     issue_condition: str
     return_condition: str | None = None
     returned_at: datetime | None = None
