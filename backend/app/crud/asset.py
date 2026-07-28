@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.models.asset import Asset
 from app.schemas.asset import AssetCreate
 
+import qrcode
+from io import BytesIO
 
 def create_asset(db: Session, asset: AssetCreate):
 
@@ -29,3 +31,20 @@ def create_asset(db: Session, asset: AssetCreate):
 
 def get_assets(db: Session):
     return db.query(Asset).all()
+
+def generate_asset_qr(asset):
+    qr_data = (
+        f"Asset ID: {asset.asset_id}\n"
+        f"Asset Code: {asset.asset_code}\n"
+        f"Asset Name: {asset.asset_name}\n"
+        f"Serial Number: {asset.serial_number}\n"
+        f"Status: {asset.status}"
+    )
+
+    img = qrcode.make(qr_data)
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return buffer

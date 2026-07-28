@@ -1,9 +1,13 @@
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.db.database import get_db
 from app.schemas.asset import AssetCreate, AssetResponse
-from app.crud.asset import create_asset, get_assets
+from app.crud.asset import create_asset, get_assets, generate_asset_qr
+from app.models.asset import Asset
+
+from fastapi.responses import StreamingResponse
+
 
 router = APIRouter(
     prefix="/assets",
@@ -24,3 +28,27 @@ def read_assets(
     db: Session = Depends(get_db)
 ):
     return get_assets(db)
+
+@router.get("/{asset_id}/qr")
+def get_asset_qr(
+    asset_id: int,
+    db: Session = Depends(get_db)
+):
+    asset = (
+        db.query(Asset)
+        .filter(Asset.asset_id == asset_id)
+        .first()
+    )
+
+    if not asset:
+        raise HTTPException(
+            status_code=404,
+            detail="Asset not found"
+        )
+
+    qr_image = generate_asset_qr(asset)
+
+    return StreamingResponse(
+        qr_image,
+        media_type="image/png"
+    )
