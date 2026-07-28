@@ -6,6 +6,8 @@ from app.schemas.asset import AssetCreate
 import qrcode
 from io import BytesIO
 
+from datetime import date
+
 def create_asset(db: Session, asset: AssetCreate):
 
     db_asset = Asset(
@@ -48,3 +50,19 @@ def generate_asset_qr(asset):
     buffer.seek(0)
 
     return buffer
+
+def calculate_depreciation(asset):
+    today = date.today()
+
+    years = today.year - asset.purchase_date.year
+
+    depreciation_rate = 0.10
+
+    current_value = (
+        float(asset.purchase_price)
+        * ((1 - depreciation_rate) ** years)
+    )
+
+    asset.current_value = round(current_value, 2)
+
+    return asset

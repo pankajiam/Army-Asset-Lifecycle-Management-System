@@ -14,6 +14,10 @@ from app.api.asset_assignment import (
 import app.models.asset
 import app.models.asset_assignment
 
+from app.api.asset_disposal import (
+    router as asset_disposal_router
+)
+
 
 app = FastAPI(
     title="Army Asset Lifecycle Management System",
@@ -34,6 +38,7 @@ async def log_requests(request: Request, call_next):
 app.include_router(user_router)
 app.include_router(asset_router)
 app.include_router(assignment_router)
+app.include_router(asset_disposal_router)
 
 Base.metadata.create_all(bind=engine)
 
