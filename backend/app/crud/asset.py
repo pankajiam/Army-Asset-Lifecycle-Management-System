@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.models.asset import Asset
 from app.schemas.asset import AssetCreate
 
+from app.crud.audit_log import create_audit_log
+
 import qrcode
 from io import BytesIO
 
@@ -10,25 +12,45 @@ from datetime import date
 
 def create_asset(db: Session, asset: AssetCreate):
 
-    db_asset = Asset(
-        asset_code=asset.asset_code,
-        asset_name=asset.asset_name,
-        category=asset.category,
-        manufacturer=asset.manufacturer,
-        model=asset.model,
-        serial_number=asset.serial_number,
-        purchase_date=asset.purchase_date,
-        purchase_price=asset.purchase_price,
-        current_value=asset.current_value,
-        status=asset.status,
-        assigned_to=asset.assigned_to,
-    )
+    try:
+        db_asset = Asset(
+            asset_code=asset.asset_code,
+            asset_name=asset.asset_name,
+            category=asset.category,
+            manufacturer=asset.manufacturer,
+            model=asset.model,
+            serial_number=asset.serial_number,
+            purchase_date=asset.purchase_date,
+            purchase_price=asset.purchase_price,
+            current_value=asset.current_value,
+            status=asset.status,
+            assigned_to=asset.assigned_to,
+        )
 
-    db.add(db_asset)
-    db.commit()
-    db.refresh(db_asset)
+        db.add(db_asset)
 
-    return db_asset
+        # Flush sends the INSERT to PostgreSQL
+        # but does NOT commit the transaction.
+        db.flush()
+
+        create_audit_log(
+            db=db,
+            user_id=50,
+            asset_id=db_asset.asset_id,
+            action="Asset Created",
+            remarks=f"{db_asset.asset_name} created"
+        )
+
+        # One commit for everything
+        db.commit()
+
+        db.refresh(db_asset)
+
+        return db_asset
+
+    except Exception:
+        db.rollback()
+        raise
 
 
 def get_assets(db: Session):

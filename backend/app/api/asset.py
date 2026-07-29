@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 
 from app.db.database import get_db
 from app.schemas.asset import AssetCreate, AssetResponse
@@ -20,12 +21,22 @@ router = APIRouter(
 )
 
 
+from sqlalchemy.exc import IntegrityError
+
 @router.post("/", response_model=AssetResponse)
 def create_new_asset(
     asset: AssetCreate,
     db: Session = Depends(get_db)
 ):
-    return create_asset(db, asset)
+    try:
+        return create_asset(db, asset)
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Asset Code or Serial Number already exists."
+        )
 
 
 @router.get("/", response_model=list[AssetResponse])

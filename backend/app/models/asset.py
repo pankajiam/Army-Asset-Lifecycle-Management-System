@@ -44,10 +44,10 @@ class Asset(Base):
     qr_code = Column(String(255))
 
     assigned_to = Column(
-        Integer,
-        ForeignKey("users.user_id")
+    Integer,
+    ForeignKey("users.user_id"),
+    nullable=True
     )
-
     is_active = Column(
         Boolean,
         default=True

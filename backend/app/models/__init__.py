@@ -4,3 +4,4 @@ from app.models.unit import Unit
 from app.models.user import User
 from app.models.asset import Asset
 from .asset_disposal import AssetDisposal
+from app.models.audit_log import AuditLog

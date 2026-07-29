@@ -12,6 +12,8 @@ from app.crud.asset_disposal import (
     request_disposal,
     approve_disposal
 )
+from app.services.auth_service import get_current_user
+from app.models.user import User
 
 router = APIRouter(
     prefix="/disposals",
@@ -54,13 +56,13 @@ def create_disposal_request(
 )
 def approve_disposal_request(
     disposal_id: int,
-    approved_by: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     disposal = approve_disposal(
         db=db,
         disposal_id=disposal_id,
-        approved_by=approved_by
+        approved_by=current_user.user_id
     )
 
     if disposal == "disposal_not_found":

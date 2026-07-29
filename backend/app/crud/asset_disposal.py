@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.asset import Asset
 from app.models.user import User
 from app.models.asset_disposal import AssetDisposal
-
+from app.crud.audit_log import create_audit_log
 
 def request_disposal(
     db: Session,
@@ -88,5 +88,13 @@ def approve_disposal(
 
     db.commit()
     db.refresh(disposal)
+
+    create_audit_log(
+        db=db,
+        user_id=approved_by,
+        asset_id=asset.asset_id,
+        action="Approved Disposal",
+        remarks=disposal.reason
+    )
 
     return disposal

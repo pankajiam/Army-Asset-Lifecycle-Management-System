@@ -13,10 +13,19 @@ from app.api.asset_assignment import (
 
 import app.models.asset
 import app.models.asset_assignment
+import app.models.audit_log
 
+from app.api.audit_log import router as audit_router
 from app.api.asset_disposal import (
     router as asset_disposal_router
 )
+
+from app.api.dashboard import router as dashboard_router
+
+from app.api.auth import (
+    router as auth_router
+)
+from app.api.recent_activity import router as recent_activity_router
 
 
 app = FastAPI(
@@ -39,6 +48,10 @@ app.include_router(user_router)
 app.include_router(asset_router)
 app.include_router(assignment_router)
 app.include_router(asset_disposal_router)
+app.include_router(auth_router)
+app.include_router(audit_router)
+app.include_router(dashboard_router)
+app.include_router(recent_activity_router)
 
 Base.metadata.create_all(bind=engine)
 
