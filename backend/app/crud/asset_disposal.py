@@ -42,3 +42,51 @@ def request_disposal(
     db.refresh(disposal)
 
     return disposal
+
+def approve_disposal(
+    db: Session,
+    disposal_id: int,
+    approved_by: int
+):
+    disposal = (
+        db.query(AssetDisposal)
+        .filter(AssetDisposal.disposal_id == disposal_id)
+        .first()
+    )
+
+    if not disposal:
+        return "disposal_not_found"
+
+    if disposal.status == "Approved":
+        return "already_approved"
+
+    approver = (
+        db.query(User)
+        .filter(User.user_id == approved_by)
+        .first()
+    )
+
+    if not approver:
+        return "approver_not_found"
+
+    if approver.role.role_name not in [
+        "Administrator",
+        "Commanding Officer"
+    ]:
+        return "not_authorized"
+
+    asset = (
+        db.query(Asset)
+        .filter(Asset.asset_id == disposal.asset_id)
+        .first()
+    )
+
+    disposal.status = "Approved"
+    disposal.approved_by = approved_by
+
+    asset.status = "Disposed"
+
+    db.commit()
+    db.refresh(disposal)
+
+    return disposal
