@@ -1,7 +1,9 @@
 # Python
 backend/venv/
+backend/.venv/
 **/__pycache__/
 *.py[cod]
+*.pyo
 
 # Environment variables
 backend/.env
@@ -15,3 +17,6 @@ Thumbs.db
 
 # Pytest
 .pytest_cache/
+
+# SQLite (if ever created accidentally)
+*.db
