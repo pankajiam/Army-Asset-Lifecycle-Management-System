@@ -26,13 +26,26 @@ from app.api.auth import (
     router as auth_router
 )
 from app.api.recent_activity import router as recent_activity_router
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Army Asset Lifecycle Management System",
     description="Backend API for Army Inventory Management",
     version="1.0.0",
     debug=True
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 from fastapi import Request
