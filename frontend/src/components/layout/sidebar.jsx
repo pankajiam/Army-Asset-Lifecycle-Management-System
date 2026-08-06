@@ -9,6 +9,8 @@ import {
   Box,
 } from "@mui/material";
 
+import { useNavigate } from "react-router-dom";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
@@ -30,6 +32,32 @@ const menuItems = [
 ];
 
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleNavigation = (item) => {
+  switch (item.text) {
+    case "Dashboard":
+      navigate("/dashboard");
+      break;
+
+    case "Assets":
+      navigate("/assets");
+      break;
+
+    case "Users":
+      navigate("/users");
+      break;
+
+    case "Logout":
+      localStorage.removeItem("token");
+      navigate("/");
+      break;
+
+    default:
+      alert(`${item.text} module coming soon.`);
+  }
+};
+
   return (
     <Drawer
       variant="permanent"
@@ -60,6 +88,7 @@ function Sidebar() {
         {menuItems.map((item) => (
           <ListItemButton
             key={item.text}
+            onClick={() => handleNavigation(item)}
             sx={{
               color: "white",
               "&:hover": {

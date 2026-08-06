@@ -27,6 +27,11 @@ from app.api.auth import (
 )
 from app.api.recent_activity import router as recent_activity_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.role import router as role_router
+from app.api.rank import router as rank_router
+from app.api.unit import router as unit_router
+from app.api.asset_category import router as asset_category_router
+from app.api.asset_status import router as asset_status_router
 
 app = FastAPI(
     title="Army Asset Lifecycle Management System",
@@ -65,6 +70,11 @@ app.include_router(auth_router)
 app.include_router(audit_router)
 app.include_router(dashboard_router)
 app.include_router(recent_activity_router)
+app.include_router(role_router)
+app.include_router(rank_router)
+app.include_router(unit_router)
+app.include_router(asset_category_router)
+app.include_router(asset_status_router)
 
 Base.metadata.create_all(bind=engine)
 

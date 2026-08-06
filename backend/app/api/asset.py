@@ -1,27 +1,26 @@
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
+from fastapi.responses import StreamingResponse
 
 from app.db.database import get_db
 from app.schemas.asset import AssetCreate, AssetResponse
+from app.models.asset import Asset
+
 from app.crud.asset import (
     create_asset,
     get_assets,
+    update_asset,
+    delete_asset,
     generate_asset_qr,
-    calculate_depreciation
+    calculate_depreciation,
 )
-from app.models.asset import Asset
-
-from fastapi.responses import StreamingResponse
-
 
 router = APIRouter(
     prefix="/assets",
     tags=["Assets"]
 )
 
-
-from sqlalchemy.exc import IntegrityError
 
 @router.post("/", response_model=AssetResponse)
 def create_new_asset(
@@ -32,7 +31,9 @@ def create_new_asset(
         return create_asset(db, asset)
 
     except IntegrityError:
+
         db.rollback()
+
         raise HTTPException(
             status_code=400,
             detail="Asset Code or Serial Number already exists."
@@ -45,11 +46,77 @@ def read_assets(
 ):
     return get_assets(db)
 
+
+@router.put("/{asset_id}", response_model=AssetResponse)
+def edit_asset(
+    asset_id: int,
+    asset: AssetCreate,
+    db: Session = Depends(get_db)
+):
+
+    try:
+
+        updated = update_asset(
+            db,
+            asset_id,
+            asset,
+        )
+
+        if updated is None:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Asset not found"
+            )
+
+        return updated
+
+    except IntegrityError:
+
+        db.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail="Asset Code or Serial Number already exists."
+        )
+
+
+@router.delete("/{asset_id}")
+def remove_asset(
+    asset_id: int,
+    db: Session = Depends(get_db)
+):
+
+    result = delete_asset(
+        db,
+        asset_id,
+    )
+
+    if result == "NOT_FOUND":
+
+        raise HTTPException(
+            status_code=404,
+            detail="Asset not found"
+        )
+
+    if result == "HAS_HISTORY":
+
+        raise HTTPException(
+            status_code=400,
+            detail="This asset has historical records and cannot be deleted. Use Disposal instead."
+        )
+
+    return {
+        "message": "Asset deleted successfully"
+    }
+
+
 @router.get("/{asset_id}/qr")
 def get_asset_qr(
     asset_id: int,
     db: Session = Depends(get_db)
 ):
+
     asset = (
         db.query(Asset)
         .filter(Asset.asset_id == asset_id)
@@ -57,6 +124,7 @@ def get_asset_qr(
     )
 
     if not asset:
+
         raise HTTPException(
             status_code=404,
             detail="Asset not found"
@@ -69,11 +137,13 @@ def get_asset_qr(
         media_type="image/png"
     )
 
+
 @router.post("/{asset_id}/depreciate")
 def depreciate_asset(
     asset_id: int,
     db: Session = Depends(get_db)
 ):
+
     asset = (
         db.query(Asset)
         .filter(Asset.asset_id == asset_id)
@@ -81,6 +151,7 @@ def depreciate_asset(
     )
 
     if not asset:
+
         raise HTTPException(
             status_code=404,
             detail="Asset not found"
@@ -89,6 +160,7 @@ def depreciate_asset(
     asset = calculate_depreciation(asset)
 
     db.commit()
+
     db.refresh(asset)
 
     return asset
