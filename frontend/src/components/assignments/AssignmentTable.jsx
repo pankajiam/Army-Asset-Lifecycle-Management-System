@@ -19,9 +19,8 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { getAssignments } from "../../services/assignmentService";
 
 function AssignmentTable({
-
     handleOpenReturn,
-
+    handleOpenTransfer,
 }) {
 
     const [assignments, setAssignments] = useState([]);
@@ -64,20 +63,28 @@ function AssignmentTable({
 
                     <TableRow>
 
-                        <TableCell><b>Asset</b></TableCell>
+                        <TableCell>
+                            <b>Asset</b>
+                        </TableCell>
 
-                        <TableCell><b>User</b></TableCell>
+                        <TableCell>
+                            <b>User</b>
+                        </TableCell>
 
-                        <TableCell><b>Issue Date</b></TableCell>
+                        <TableCell>
+                            <b>Issue Date</b>
+                        </TableCell>
 
-                        <TableCell><b>Condition</b></TableCell>
+                        <TableCell>
+                            <b>Condition</b>
+                        </TableCell>
 
-                        <TableCell><b>Status</b></TableCell>
+                        <TableCell>
+                            <b>Status</b>
+                        </TableCell>
 
                         <TableCell align="center">
-
                             <b>Actions</b>
-
                         </TableCell>
 
                     </TableRow>
@@ -94,15 +101,11 @@ function AssignmentTable({
                         >
 
                             <TableCell>
-
                                 {assignment.asset_name}
-
                             </TableCell>
 
                             <TableCell>
-
                                 {assignment.user_name}
-
                             </TableCell>
 
                             <TableCell>
@@ -114,9 +117,7 @@ function AssignmentTable({
                             </TableCell>
 
                             <TableCell>
-
                                 {assignment.issue_condition}
-
                             </TableCell>
 
                             <TableCell>
@@ -139,34 +140,45 @@ function AssignmentTable({
 
                             <TableCell align="center">
 
-                                <IconButton
-                                    color="primary"
-                                >
+                                <IconButton color="primary">
 
                                     <VisibilityIcon />
 
                                 </IconButton>
 
-                                <IconButton
-                                    color="success"
-                                    onClick={() =>
-                                        handleOpenReturn(
-                                            assignment
-                                        )
-                                    }
-                                >
+                                {!assignment.returned_at && (
 
-                                    <AssignmentReturnIcon />
+                                    <>
 
-                                </IconButton>
+                                        <IconButton
+                                            color="success"
+                                            onClick={() =>
+                                                handleOpenReturn(
+                                                    assignment
+                                                )
+                                            }
+                                        >
 
-                                <IconButton
-                                    color="warning"
-                                >
+                                            <AssignmentReturnIcon />
 
-                                    <SwapHorizIcon />
+                                        </IconButton>
 
-                                </IconButton>
+                                        <IconButton
+                                            color="warning"
+                                            onClick={() =>
+                                                handleOpenTransfer(
+                                                    assignment
+                                                )
+                                            }
+                                        >
+
+                                            <SwapHorizIcon />
+
+                                        </IconButton>
+
+                                    </>
+
+                                )}
 
                             </TableCell>
 

@@ -52,3 +52,21 @@ export const returnAsset = async (data) => {
     return response.data;
 
 };
+
+export const transferAsset = async (data) => {
+
+    const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+        "/assignments/transfer",
+        data,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return response.data;
+
+};

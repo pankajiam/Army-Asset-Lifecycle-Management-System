@@ -6,6 +6,7 @@ import AssignmentToolbar from "../../components/assignments/AssignmentToolbar";
 import AssignmentTable from "../../components/assignments/AssignmentTable";
 import IssueAssetDialog from "../../components/assignments/IssueAssetDialog";
 import ReturnAssetDialog from "../../components/assignments/ReturnAssetDialog";
+import TransferAssetDialog from "../../components/assignments/TransferAssetDialog";
 
 import {
     Box,
@@ -19,14 +20,20 @@ function Assignments() {
 
     const [openReturnDialog, setOpenReturnDialog] = useState(false);
 
+    const [openTransferDialog, setOpenTransferDialog] = useState(false);
+
     const [selectedAssignment, setSelectedAssignment] = useState(null);
 
     const handleOpenIssue = () => {
+
         setOpenIssueDialog(true);
+
     };
 
     const handleCloseIssue = () => {
+
         setOpenIssueDialog(false);
+
     };
 
     const handleOpenReturn = (assignment) => {
@@ -40,6 +47,22 @@ function Assignments() {
     const handleCloseReturn = () => {
 
         setOpenReturnDialog(false);
+
+        setSelectedAssignment(null);
+
+    };
+
+    const handleOpenTransfer = (assignment) => {
+
+        setSelectedAssignment(assignment);
+
+        setOpenTransferDialog(true);
+
+    };
+
+    const handleCloseTransfer = () => {
+
+        setOpenTransferDialog(false);
 
         setSelectedAssignment(null);
 
@@ -87,6 +110,7 @@ function Assignments() {
 
                 <AssignmentTable
                     handleOpenReturn={handleOpenReturn}
+                    handleOpenTransfer={handleOpenTransfer}
                 />
 
                 <IssueAssetDialog
@@ -98,6 +122,13 @@ function Assignments() {
                 <ReturnAssetDialog
                     open={openReturnDialog}
                     handleClose={handleCloseReturn}
+                    assignment={selectedAssignment}
+                    refreshAssignments={refreshAssignments}
+                />
+
+                <TransferAssetDialog
+                    open={openTransferDialog}
+                    handleClose={handleCloseTransfer}
                     assignment={selectedAssignment}
                     refreshAssignments={refreshAssignments}
                 />
