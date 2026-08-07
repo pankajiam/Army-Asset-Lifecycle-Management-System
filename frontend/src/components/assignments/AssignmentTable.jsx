@@ -19,6 +19,7 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { getAssignments } from "../../services/assignmentService";
 
 function AssignmentTable({
+    handleOpenHistory,
     handleOpenReturn,
     handleOpenTransfer,
 }) {
@@ -140,7 +141,14 @@ function AssignmentTable({
 
                             <TableCell align="center">
 
-                                <IconButton color="primary">
+                                <IconButton
+                                    color="primary"
+                                    onClick={() =>
+                                        handleOpenHistory(
+                                            assignment
+                                        )
+                                    }
+                                >
 
                                     <VisibilityIcon />
 

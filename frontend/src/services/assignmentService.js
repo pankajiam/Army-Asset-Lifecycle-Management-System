@@ -70,3 +70,20 @@ export const transferAsset = async (data) => {
     return response.data;
 
 };
+
+export const getAssetHistory = async (assetId) => {
+
+    const token = localStorage.getItem("token");
+
+    const response = await axios.get(
+        `/assignments/history/${assetId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return response.data;
+
+};

@@ -10,11 +10,21 @@ import {
     TableRow,
     IconButton,
     Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Typography,
+    Stack,
 } from "@mui/material";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import DownloadIcon from "@mui/icons-material/Download";
+import PrintIcon from "@mui/icons-material/Print";
 
 import { getAssets } from "../../services/assetService";
 
@@ -45,6 +55,14 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     const [rows, setRows] = useState([]);
 
+    const [qrOpen, setQrOpen] = useState(false);
+
+    const [selectedAsset, setSelectedAsset] = useState(null);
+
+    const [qrUrl, setQrUrl] = useState("");
+
+    const [qrLoading, setQrLoading] = useState(false);
+
     useEffect(() => {
 
         fetchAssets();
@@ -68,89 +86,432 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     };
 
+    const handleOpenQR = async (asset) => {
+
+        try {
+
+            setQrLoading(true);
+
+            setSelectedAsset(asset);
+
+            setQrOpen(true);
+
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `http://127.0.0.1:8000/assets/${asset.asset_id}/qr`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to generate QR code"
+                );
+
+            }
+
+            const blob = await response.blob();
+
+            const imageUrl = URL.createObjectURL(blob);
+
+            setQrUrl(imageUrl);
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert("Failed to load QR code.");
+
+            setQrOpen(false);
+
+        }
+        finally {
+
+            setQrLoading(false);
+
+        }
+
+    };
+
+    const handleCloseQR = () => {
+
+        if (qrUrl) {
+
+            URL.revokeObjectURL(qrUrl);
+
+        }
+
+        setQrUrl("");
+
+        setSelectedAsset(null);
+
+        setQrOpen(false);
+
+    };
+
+    const handleDownloadQR = () => {
+
+        if (!qrUrl || !selectedAsset) {
+            return;
+        }
+
+        const link = document.createElement("a");
+
+        link.href = qrUrl;
+
+        link.download =
+            `${selectedAsset.asset_code}_QR.png`;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+    };
+
+    const handlePrintQR = () => {
+
+        if (!qrUrl || !selectedAsset) {
+            return;
+        }
+
+        const printWindow = window.open(
+            "",
+            "_blank",
+            "width=600,height=700"
+        );
+
+        if (!printWindow) {
+
+            alert(
+                "Please allow pop-ups to print the QR code."
+            );
+
+            return;
+
+        }
+
+        printWindow.document.write(`
+
+            <html>
+
+                <head>
+
+                    <title>
+                        ${selectedAsset.asset_code} QR Code
+                    </title>
+
+                    <style>
+
+                        body {
+                            font-family: Arial, sans-serif;
+                            text-align: center;
+                            padding: 40px;
+                        }
+
+                        img {
+                            width: 300px;
+                            height: 300px;
+                        }
+
+                        h2 {
+                            margin-bottom: 8px;
+                        }
+
+                        p {
+                            margin-top: 4px;
+                        }
+
+                    </style>
+
+                </head>
+
+                <body>
+
+                    <h2>
+                        ${selectedAsset.asset_name}
+                    </h2>
+
+                    <p>
+                        Asset Code:
+                        ${selectedAsset.asset_code}
+                    </p>
+
+                    <img
+                        src="${qrUrl}"
+                        alt="Asset QR Code"
+                    />
+
+                    <script>
+
+                        window.onload = function () {
+
+                            window.print();
+
+                        };
+
+                    <\/script>
+
+                </body>
+
+            </html>
+
+        `);
+
+        printWindow.document.close();
+
+    };
+
     return (
 
-        <TableContainer
-            component={Paper}
-            elevation={3}
-            sx={{ mt: 3 }}
-        >
+        <>
 
-            <Table>
+            <TableContainer
+                component={Paper}
+                elevation={3}
+                sx={{ mt: 3 }}
+            >
 
-                <TableHead>
+                <Table>
 
-                    <TableRow>
+                    <TableHead>
 
-                        <TableCell><b>Asset Code</b></TableCell>
-                        <TableCell><b>Asset Name</b></TableCell>
-                        <TableCell><b>Category</b></TableCell>
-                        <TableCell><b>Status</b></TableCell>
-                        <TableCell><b>Actions</b></TableCell>
-
-                    </TableRow>
-
-                </TableHead>
-
-                <TableBody>
-
-                    {rows.map((row) => (
-
-                        <TableRow
-                            key={row.asset_id}
-                            hover
-                        >
-
-                            <TableCell>{row.asset_code}</TableCell>
-
-                            <TableCell>{row.asset_name}</TableCell>
-
-                            <TableCell>{row.category}</TableCell>
+                        <TableRow>
 
                             <TableCell>
-
-                                <Chip
-                                    label={row.status}
-                                    color={statusColor(row.status)}
-                                    size="small"
-                                />
-
+                                <b>Asset Code</b>
                             </TableCell>
 
                             <TableCell>
+                                <b>Asset Name</b>
+                            </TableCell>
 
-                                <IconButton color="primary">
+                            <TableCell>
+                                <b>Category</b>
+                            </TableCell>
 
-                                    <VisibilityIcon />
+                            <TableCell>
+                                <b>Status</b>
+                            </TableCell>
 
-                                </IconButton>
-
-                                <IconButton
-                                    color="warning"
-                                    onClick={() => handleEdit(row)}
-                                >
-
-                                    <EditIcon />
-
-                                </IconButton>
-
-                                <IconButton color="error">
-
-                                    <DeleteIcon />
-
-                                </IconButton>
-
+                            <TableCell>
+                                <b>Actions</b>
                             </TableCell>
 
                         </TableRow>
 
-                    ))}
+                    </TableHead>
 
-                </TableBody>
+                    <TableBody>
 
-            </Table>
+                        {rows.map((row) => (
 
-        </TableContainer>
+                            <TableRow
+                                key={row.asset_id}
+                                hover
+                            >
+
+                                <TableCell>
+                                    {row.asset_code}
+                                </TableCell>
+
+                                <TableCell>
+                                    {row.asset_name}
+                                </TableCell>
+
+                                <TableCell>
+                                    {row.category}
+                                </TableCell>
+
+                                <TableCell>
+
+                                    <Chip
+                                        label={row.status}
+                                        color={statusColor(row.status)}
+                                        size="small"
+                                    />
+
+                                </TableCell>
+
+                                <TableCell>
+
+                                    <IconButton
+                                        color="primary"
+                                    >
+
+                                        <VisibilityIcon />
+
+                                    </IconButton>
+
+                                    <IconButton
+                                        color="secondary"
+                                        onClick={() =>
+                                            handleOpenQR(row)
+                                        }
+                                    >
+
+                                        <QrCode2Icon />
+
+                                    </IconButton>
+
+                                    <IconButton
+                                        color="warning"
+                                        onClick={() =>
+                                            handleEdit(row)
+                                        }
+                                    >
+
+                                        <EditIcon />
+
+                                    </IconButton>
+
+                                    <IconButton
+                                        color="error"
+                                    >
+
+                                        <DeleteIcon />
+
+                                    </IconButton>
+
+                                </TableCell>
+
+                            </TableRow>
+
+                        ))}
+
+                    </TableBody>
+
+                </Table>
+
+            </TableContainer>
+
+            <Dialog
+                open={qrOpen}
+                onClose={handleCloseQR}
+                maxWidth="sm"
+                fullWidth
+            >
+
+                <DialogTitle>
+                    Asset QR Code
+                </DialogTitle>
+
+                <DialogContent
+                    sx={{
+                        textAlign: "center",
+                        py: 4,
+                    }}
+                >
+
+                    {selectedAsset && (
+
+                        <>
+
+                            <Typography
+                                variant="h6"
+                                sx={{ mb: 1 }}
+                            >
+
+                                {selectedAsset.asset_name}
+
+                            </Typography>
+
+                            <Typography
+                                color="text.secondary"
+                                sx={{ mb: 3 }}
+                            >
+
+                                Asset Code:{" "}
+                                {selectedAsset.asset_code}
+
+                            </Typography>
+
+                            {qrLoading ? (
+
+                                <Typography>
+                                    Generating QR Code...
+                                </Typography>
+
+                            ) : qrUrl ? (
+
+                                <img
+                                    src={qrUrl}
+                                    alt="Asset QR Code"
+                                    style={{
+                                        width: "300px",
+                                        height: "300px",
+                                    }}
+                                />
+
+                            ) : (
+
+                                <Typography>
+                                    QR Code unavailable.
+                                </Typography>
+
+                            )}
+
+                        </>
+
+                    )}
+
+                </DialogContent>
+
+                <DialogActions>
+
+                    <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{
+                            width: "100%",
+                            justifyContent: "flex-end",
+                        }}
+                    >
+
+                        <Button
+                            variant="outlined"
+                            startIcon={<DownloadIcon />}
+                            onClick={handleDownloadQR}
+                            disabled={!qrUrl || qrLoading}
+                        >
+
+                            Download QR
+
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            startIcon={<PrintIcon />}
+                            onClick={handlePrintQR}
+                            disabled={!qrUrl || qrLoading}
+                        >
+
+                            Print QR
+
+                        </Button>
+
+                        <Button
+                            onClick={handleCloseQR}
+                        >
+
+                            Close
+
+                        </Button>
+
+                    </Stack>
+
+                </DialogActions>
+
+            </Dialog>
+
+        </>
 
     );
 

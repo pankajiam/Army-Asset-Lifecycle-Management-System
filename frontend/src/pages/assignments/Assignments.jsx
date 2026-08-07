@@ -7,6 +7,7 @@ import AssignmentTable from "../../components/assignments/AssignmentTable";
 import IssueAssetDialog from "../../components/assignments/IssueAssetDialog";
 import ReturnAssetDialog from "../../components/assignments/ReturnAssetDialog";
 import TransferAssetDialog from "../../components/assignments/TransferAssetDialog";
+import AssignmentHistoryDialog from "../../components/assignments/AssignmentHistoryDialog";
 
 import {
     Box,
@@ -21,6 +22,8 @@ function Assignments() {
     const [openReturnDialog, setOpenReturnDialog] = useState(false);
 
     const [openTransferDialog, setOpenTransferDialog] = useState(false);
+
+    const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
 
     const [selectedAssignment, setSelectedAssignment] = useState(null);
 
@@ -68,6 +71,22 @@ function Assignments() {
 
     };
 
+    const handleOpenHistory = (assignment) => {
+
+        setSelectedAssignment(assignment);
+
+        setOpenHistoryDialog(true);
+
+    };
+
+    const handleCloseHistory = () => {
+
+        setOpenHistoryDialog(false);
+
+        setSelectedAssignment(null);
+
+    };
+
     const refreshAssignments = () => {
 
         window.location.reload();
@@ -109,6 +128,7 @@ function Assignments() {
                 />
 
                 <AssignmentTable
+                    handleOpenHistory={handleOpenHistory}
                     handleOpenReturn={handleOpenReturn}
                     handleOpenTransfer={handleOpenTransfer}
                 />
@@ -131,6 +151,12 @@ function Assignments() {
                     handleClose={handleCloseTransfer}
                     assignment={selectedAssignment}
                     refreshAssignments={refreshAssignments}
+                />
+
+                <AssignmentHistoryDialog
+                    open={openHistoryDialog}
+                    handleClose={handleCloseHistory}
+                    assignment={selectedAssignment}
                 />
 
             </Box>
