@@ -86,3 +86,21 @@ export const getAssetStatuses = async () => {
     return response.data;
 
 };
+
+export const depreciateAsset = async (assetId) => {
+
+    const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+        `/assets/${assetId}/depreciate`,
+        {},
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return response.data;
+
+};

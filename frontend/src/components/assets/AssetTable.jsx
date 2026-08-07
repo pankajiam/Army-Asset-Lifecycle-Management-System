@@ -25,6 +25,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
 import DownloadIcon from "@mui/icons-material/Download";
 import PrintIcon from "@mui/icons-material/Print";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import DepreciationDialog from "./DepreciationDialog";
 
 import { getAssets } from "../../services/assetService";
 
@@ -55,6 +57,9 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     const [rows, setRows] = useState([]);
 
+    const [openDepreciationDialog, setOpenDepreciationDialog] =
+    useState(false);
+
     const [qrOpen, setQrOpen] = useState(false);
 
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -83,6 +88,22 @@ function AssetTable({ loadAssets, handleEdit }) {
             console.log(err);
 
         }
+
+    };
+
+    const handleOpenDepreciation = (asset) => {
+
+        setSelectedAsset(asset);
+
+        setOpenDepreciationDialog(true);
+
+    };
+
+    const handleCloseDepreciation = () => {
+
+        setOpenDepreciationDialog(false);
+
+        setSelectedAsset(null);
 
     };
 
@@ -373,6 +394,17 @@ function AssetTable({ loadAssets, handleEdit }) {
                                     </IconButton>
 
                                     <IconButton
+                                        color="success"
+                                        onClick={() =>
+                                            handleOpenDepreciation(row)
+                                        }
+                                    >
+
+                                        <AccountBalanceWalletIcon />
+
+                                    </IconButton>
+
+                                    <IconButton
                                         color="error"
                                     >
 
@@ -511,10 +543,18 @@ function AssetTable({ loadAssets, handleEdit }) {
 
             </Dialog>
 
-        </>
 
-    );
+            <DepreciationDialog
+                open={openDepreciationDialog}
+                handleClose={handleCloseDepreciation}
+                asset={selectedAsset}
+                refreshAssets={fetchAssets}
+            />
 
-}
+            </>
 
-export default AssetTable;
+            );
+
+            }
+
+            export default AssetTable;
