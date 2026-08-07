@@ -1,8 +1,26 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 from app.models.asset import Asset
 from app.models.user import User
 from app.models.asset_assignment import AssetAssignment
+
+
+def _assignment_response(assignment: AssetAssignment):
+    return {
+        "assignment_id": assignment.assignment_id,
+
+        "asset_id": assignment.asset_id,
+        "asset_name": assignment.asset.asset_name,
+
+        "user_id": assignment.user_id,
+        "user_name": f"{assignment.user.first_name} {assignment.user.last_name}",
+
+        "issued_at": assignment.issued_at,
+        "issue_condition": assignment.issue_condition,
+        "return_condition": assignment.return_condition,
+        "returned_at": assignment.returned_at,
+    }
 
 
 def issue_asset(
@@ -13,9 +31,7 @@ def issue_asset(
 ):
     asset = (
         db.query(Asset)
-        .filter(
-            Asset.asset_id == asset_id
-        )
+        .filter(Asset.asset_id == asset_id)
         .first()
     )
 
@@ -24,9 +40,7 @@ def issue_asset(
 
     user = (
         db.query(User)
-        .filter(
-            User.user_id == user_id
-        )
+        .filter(User.user_id == user_id)
         .first()
     )
 
@@ -57,10 +71,7 @@ def issue_asset(
     db.commit()
     db.refresh(assignment)
 
-    return assignment
-
-
-from sqlalchemy.sql import func
+    return _assignment_response(assignment)
 
 
 def return_asset(
@@ -82,9 +93,7 @@ def return_asset(
 
     asset = (
         db.query(Asset)
-        .filter(
-            Asset.asset_id == asset_id
-        )
+        .filter(Asset.asset_id == asset_id)
         .first()
     )
 
@@ -96,7 +105,7 @@ def return_asset(
     db.commit()
     db.refresh(assignment)
 
-    return assignment
+    return _assignment_response(assignment)
 
 
 def transfer_asset(
@@ -119,9 +128,7 @@ def transfer_asset(
 
     new_user = (
         db.query(User)
-        .filter(
-            User.user_id == new_user_id
-        )
+        .filter(User.user_id == new_user_id)
         .first()
     )
 
@@ -144,7 +151,8 @@ def transfer_asset(
     db.commit()
     db.refresh(new_assignment)
 
-    return new_assignment
+    return _assignment_response(new_assignment)
+
 
 def get_asset_history(
     db: Session,
@@ -161,4 +169,17 @@ def get_asset_history(
         .all()
     )
 
-    return history
+    return [_assignment_response(item) for item in history]
+
+
+def get_assignments(db: Session):
+
+    assignments = (
+        db.query(AssetAssignment)
+        .order_by(
+            AssetAssignment.issued_at.desc()
+        )
+        .all()
+    )
+
+    return [_assignment_response(item) for item in assignments]

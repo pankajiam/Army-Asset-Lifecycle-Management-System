@@ -32,31 +32,39 @@ const menuItems = [
 ];
 
 function Sidebar() {
+
   const navigate = useNavigate();
 
   const handleNavigation = (item) => {
-  switch (item.text) {
-    case "Dashboard":
-      navigate("/dashboard");
-      break;
 
-    case "Assets":
-      navigate("/assets");
-      break;
+    switch (item.text) {
 
-    case "Users":
-      navigate("/users");
-      break;
+      case "Dashboard":
+        navigate("/dashboard");
+        break;
 
-    case "Logout":
-      localStorage.removeItem("token");
-      navigate("/");
-      break;
+      case "Assets":
+        navigate("/assets");
+        break;
 
-    default:
-      alert(`${item.text} module coming soon.`);
-  }
-};
+      case "Users":
+        navigate("/users");
+        break;
+
+      case "Assignments":
+        navigate("/assignments");
+        break;
+
+      case "Logout":
+        localStorage.removeItem("token");
+        navigate("/");
+        break;
+
+      default:
+        alert(`${item.text} module coming soon.`);
+    }
+
+  };
 
   return (
     <Drawer

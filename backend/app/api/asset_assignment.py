@@ -2,18 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+
 from app.schemas.asset_assignment import (
     AssetIssue,
     AssetReturn,
     AssetTransfer,
-    AssignmentResponse
+    AssignmentResponse,
 )
 
 from app.crud.asset_assignment import (
     issue_asset,
     return_asset,
     transfer_asset,
-    get_asset_history
+    get_asset_history,
+    get_assignments,
 )
 
 router = APIRouter(
@@ -21,6 +23,21 @@ router = APIRouter(
     tags=["Asset Assignments"]
 )
 
+
+# ----------------------------------------------------
+# NEW API
+# ----------------------------------------------------
+
+@router.get("/", response_model=list[AssignmentResponse])
+def list_assignments(
+    db: Session = Depends(get_db)
+):
+    return get_assignments(db)
+
+
+# ----------------------------------------------------
+# ISSUE ASSET
+# ----------------------------------------------------
 
 @router.post(
     "/issue",
@@ -52,6 +69,10 @@ def issue(
     return assignment
 
 
+# ----------------------------------------------------
+# RETURN ASSET
+# ----------------------------------------------------
+
 @router.post(
     "/return",
     response_model=AssignmentResponse
@@ -73,6 +94,11 @@ def return_asset_api(
         )
 
     return assignment
+
+
+# ----------------------------------------------------
+# TRANSFER ASSET
+# ----------------------------------------------------
 
 @router.post(
     "/transfer",
@@ -100,22 +126,29 @@ def transfer_asset_api(
             status_code=404,
             detail="New user not found"
         )
+
     if assignment == "same_user":
         raise HTTPException(
             status_code=400,
             detail="Asset is already assigned to this user"
-    )
+        )
 
     return assignment
 
-@router.get("/history/{asset_id}", response_model=list[AssignmentResponse])
+
+# ----------------------------------------------------
+# ASSET HISTORY
+# ----------------------------------------------------
+
+@router.get(
+    "/history/{asset_id}",
+    response_model=list[AssignmentResponse]
+)
 def asset_history(
     asset_id: int,
     db: Session = Depends(get_db)
 ):
-    history = get_asset_history(
+    return get_asset_history(
         db=db,
         asset_id=asset_id
     )
-
-    return history
