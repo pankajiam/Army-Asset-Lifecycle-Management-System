@@ -21,14 +21,17 @@ import {
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
 import DownloadIcon from "@mui/icons-material/Download";
 import PrintIcon from "@mui/icons-material/Print";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
+
 import DepreciationDialog from "./DepreciationDialog";
+import DisposalRequestDialog from "./DisposalRequestDialog";
 
 import { getAssets } from "../../services/assetService";
+
 
 function statusColor(status) {
 
@@ -53,12 +56,16 @@ function statusColor(status) {
 
 }
 
+
 function AssetTable({ loadAssets, handleEdit }) {
 
     const [rows, setRows] = useState([]);
 
     const [openDepreciationDialog, setOpenDepreciationDialog] =
-    useState(false);
+        useState(false);
+
+    const [openDisposalDialog, setOpenDisposalDialog] =
+        useState(false);
 
     const [qrOpen, setQrOpen] = useState(false);
 
@@ -68,11 +75,13 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     const [qrLoading, setQrLoading] = useState(false);
 
+
     useEffect(() => {
 
         fetchAssets();
 
     }, [loadAssets]);
+
 
     const fetchAssets = async () => {
 
@@ -91,6 +100,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     };
 
+
     const handleOpenDepreciation = (asset) => {
 
         setSelectedAsset(asset);
@@ -99,6 +109,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     };
 
+
     const handleCloseDepreciation = () => {
 
         setOpenDepreciationDialog(false);
@@ -106,6 +117,25 @@ function AssetTable({ loadAssets, handleEdit }) {
         setSelectedAsset(null);
 
     };
+
+
+    const handleOpenDisposal = (asset) => {
+
+        setSelectedAsset(asset);
+
+        setOpenDisposalDialog(true);
+
+    };
+
+
+    const handleCloseDisposal = () => {
+
+        setOpenDisposalDialog(false);
+
+        setSelectedAsset(null);
+
+    };
+
 
     const handleOpenQR = async (asset) => {
 
@@ -128,6 +158,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                 }
             );
 
+
             if (!response.ok) {
 
                 throw new Error(
@@ -135,6 +166,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                 );
 
             }
+
 
             const blob = await response.blob();
 
@@ -160,6 +192,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     };
 
+
     const handleCloseQR = () => {
 
         if (qrUrl) {
@@ -176,11 +209,15 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     };
 
+
     const handleDownloadQR = () => {
 
         if (!qrUrl || !selectedAsset) {
+
             return;
+
         }
+
 
         const link = document.createElement("a");
 
@@ -197,17 +234,22 @@ function AssetTable({ loadAssets, handleEdit }) {
 
     };
 
+
     const handlePrintQR = () => {
 
         if (!qrUrl || !selectedAsset) {
+
             return;
+
         }
+
 
         const printWindow = window.open(
             "",
             "_blank",
             "width=600,height=700"
         );
+
 
         if (!printWindow) {
 
@@ -218,6 +260,7 @@ function AssetTable({ loadAssets, handleEdit }) {
             return;
 
         }
+
 
         printWindow.document.write(`
 
@@ -273,9 +316,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                     <script>
 
                         window.onload = function () {
-
                             window.print();
-
                         };
 
                     <\/script>
@@ -286,9 +327,11 @@ function AssetTable({ loadAssets, handleEdit }) {
 
         `);
 
+
         printWindow.document.close();
 
     };
+
 
     return (
 
@@ -330,6 +373,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                     </TableHead>
 
+
                     <TableBody>
 
                         {rows.map((row) => (
@@ -361,6 +405,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                                 </TableCell>
 
+
                                 <TableCell>
 
                                     <IconButton
@@ -370,6 +415,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                                         <VisibilityIcon />
 
                                     </IconButton>
+
 
                                     <IconButton
                                         color="secondary"
@@ -382,6 +428,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                                     </IconButton>
 
+
                                     <IconButton
                                         color="warning"
                                         onClick={() =>
@@ -392,6 +439,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                                         <EditIcon />
 
                                     </IconButton>
+
 
                                     <IconButton
                                         color="success"
@@ -404,15 +452,20 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                                     </IconButton>
 
+
                                     <IconButton
                                         color="error"
+                                        onClick={() =>
+                                            handleOpenDisposal(row)
+                                        }
                                     >
 
-                                        <DeleteIcon />
+                                        <DeleteSweepIcon />
 
                                     </IconButton>
 
                                 </TableCell>
+
 
                             </TableRow>
 
@@ -424,6 +477,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
             </TableContainer>
 
+
             <Dialog
                 open={qrOpen}
                 onClose={handleCloseQR}
@@ -434,6 +488,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                 <DialogTitle>
                     Asset QR Code
                 </DialogTitle>
+
 
                 <DialogContent
                     sx={{
@@ -455,6 +510,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                             </Typography>
 
+
                             <Typography
                                 color="text.secondary"
                                 sx={{ mb: 3 }}
@@ -464,6 +520,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                                 {selectedAsset.asset_code}
 
                             </Typography>
+
 
                             {qrLoading ? (
 
@@ -496,6 +553,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                 </DialogContent>
 
+
                 <DialogActions>
 
                     <Stack
@@ -518,6 +576,7 @@ function AssetTable({ loadAssets, handleEdit }) {
 
                         </Button>
 
+
                         <Button
                             variant="contained"
                             startIcon={<PrintIcon />}
@@ -528,6 +587,7 @@ function AssetTable({ loadAssets, handleEdit }) {
                             Print QR
 
                         </Button>
+
 
                         <Button
                             onClick={handleCloseQR}
@@ -551,10 +611,19 @@ function AssetTable({ loadAssets, handleEdit }) {
                 refreshAssets={fetchAssets}
             />
 
-            </>
 
-            );
+            <DisposalRequestDialog
+                open={openDisposalDialog}
+                handleClose={handleCloseDisposal}
+                asset={selectedAsset}
+                refreshAssets={fetchAssets}
+            />
 
-            }
+        </>
 
-            export default AssetTable;
+    );
+
+}
+
+
+export default AssetTable;

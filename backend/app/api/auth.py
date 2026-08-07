@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-
-from app.schemas.auth import (
-    LoginRequest,
-    TokenResponse
+from app.models.user import User
+from app.core.security import (
+    verify_password,
+    create_access_token,
 )
 
-from app.services.auth_service import login_user
+from app.schemas.auth import TokenResponse
 
 
 router = APIRouter(
@@ -22,20 +23,41 @@ router = APIRouter(
     response_model=TokenResponse
 )
 def login(
-    request: LoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    token = login_user(
-        db=db,
-        email=request.email,
-        password=request.password
+
+    user = (
+        db.query(User)
+        .filter(
+            (User.email == form_data.username) |
+            (User.army_number == form_data.username)
+        )
+        .first()
     )
 
-    if token == "invalid_credentials":
+    if not user:
+
         raise HTTPException(
             status_code=401,
-            detail="Invalid email or password"
+            detail="Invalid email/Army Number or password"
         )
+
+    if not verify_password(
+        form_data.password,
+        user.password_hash
+    ):
+
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email/Army Number or password"
+        )
+
+    token = create_access_token(
+        {
+            "sub": str(user.user_id)
+        }
+    )
 
     return {
         "access_token": token,

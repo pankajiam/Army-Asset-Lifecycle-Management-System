@@ -10,7 +10,8 @@ from app.schemas.asset_disposal import (
 
 from app.crud.asset_disposal import (
     request_disposal,
-    approve_disposal
+    approve_disposal,
+    get_pending_disposals
 )
 from app.services.auth_service import get_current_user
 from app.models.user import User
@@ -20,19 +21,19 @@ router = APIRouter(
     tags=["Asset Disposal"]
 )
 
-
 @router.post(
     "/request",
     response_model=DisposalResponse
 )
 def create_disposal_request(
     request: DisposalRequest,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     disposal = request_disposal(
         db=db,
         asset_id=request.asset_id,
-        requested_by=request.requested_by,
+        requested_by=current_user.user_id,
         reason=request.reason
     )
 
@@ -49,6 +50,26 @@ def create_disposal_request(
         )
 
     return disposal
+
+@router.get(
+    "/pending",
+    response_model=list[DisposalResponse]
+)
+def get_pending_disposal_requests(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    if current_user.role.role_name not in [
+        "Administrator",
+        "Commanding Officer"
+    ]:
+        raise HTTPException(
+            status_code=403,
+            detail="Only Administrator or Commanding Officer can view disposal requests"
+        )
+
+    return get_pending_disposals(db)
 
 @router.put(
     "/approve/{disposal_id}",

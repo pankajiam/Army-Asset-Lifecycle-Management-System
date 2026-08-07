@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.asset_disposal import AssetDisposal
 from app.crud.audit_log import create_audit_log
 
+
 def request_disposal(
     db: Session,
     asset_id: int,
@@ -38,10 +39,13 @@ def request_disposal(
     asset.status = "Pending Disposal"
 
     db.add(disposal)
+
     db.commit()
+
     db.refresh(disposal)
 
     return disposal
+
 
 def approve_disposal(
     db: Session,
@@ -50,7 +54,9 @@ def approve_disposal(
 ):
     disposal = (
         db.query(AssetDisposal)
-        .filter(AssetDisposal.disposal_id == disposal_id)
+        .filter(
+            AssetDisposal.disposal_id == disposal_id
+        )
         .first()
     )
 
@@ -77,17 +83,20 @@ def approve_disposal(
 
     asset = (
         db.query(Asset)
-        .filter(Asset.asset_id == disposal.asset_id)
+        .filter(
+            Asset.asset_id == disposal.asset_id
+        )
         .first()
     )
 
+    if not asset:
+        return "asset_not_found"
+
     disposal.status = "Approved"
+
     disposal.approved_by = approved_by
 
     asset.status = "Disposed"
-
-    db.commit()
-    db.refresh(disposal)
 
     create_audit_log(
         db=db,
@@ -97,4 +106,23 @@ def approve_disposal(
         remarks=disposal.reason
     )
 
+    db.commit()
+
+    db.refresh(disposal)
+
     return disposal
+
+
+def get_pending_disposals(
+    db: Session
+):
+    return (
+        db.query(AssetDisposal)
+        .filter(
+            AssetDisposal.status == "Pending"
+        )
+        .order_by(
+            AssetDisposal.requested_at.desc()
+        )
+        .all()
+    )

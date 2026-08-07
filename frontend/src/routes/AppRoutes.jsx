@@ -5,22 +5,60 @@ import Dashboard from "../pages/Dashboard/Dashboard";
 import Assets from "../pages/assets/Assets";
 import Users from "../pages/users/Users";
 import Assignments from "../pages/assignments/Assignments";
+import DisposalApproval from "../pages/disposal/DisposalApproval";
+import AuditLogs from "../pages/auditlogs/AuditLogs";
+
 
 function AppRoutes() {
+
     return (
+
         <BrowserRouter>
+
             <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/assets" element={<Assets />} />
-                <Route path="/users" element={<Users />} />
+
+                <Route
+                    path="/"
+                    element={<Login />}
+                />
+
+                <Route
+                    path="/dashboard"
+                    element={<Dashboard />}
+                />
+
+                <Route
+                    path="/assets"
+                    element={<Assets />}
+                />
+
+                <Route
+                    path="/users"
+                    element={<Users />}
+                />
+
                 <Route
                     path="/assignments"
                     element={<Assignments />}
                 />
+
+                <Route
+                    path="/disposal"
+                    element={<DisposalApproval />}
+                />
+
+                <Route
+                    path="/auditlogs"
+                    element={<AuditLogs />}
+                />
+
             </Routes>
+
         </BrowserRouter>
+
     );
+
 }
+
 
 export default AppRoutes;

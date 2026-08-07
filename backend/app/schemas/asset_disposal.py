@@ -4,7 +4,6 @@ from datetime import datetime
 
 class DisposalRequest(BaseModel):
     asset_id: int
-    requested_by: int
     reason: str
 
 
