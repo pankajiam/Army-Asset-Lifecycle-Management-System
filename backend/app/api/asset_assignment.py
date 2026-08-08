@@ -18,26 +18,39 @@ from app.crud.asset_assignment import (
     get_assignments,
 )
 
+from app.models.user import User
+
+from app.services.auth_service import (
+    require_asset_operations,
+)
+
+
 router = APIRouter(
     prefix="/assignments",
     tags=["Asset Assignments"]
 )
 
 
-# ----------------------------------------------------
-# NEW API
-# ----------------------------------------------------
+# ============================================================
+# LIST ALL ASSIGNMENTS
+# All authenticated users
+# ============================================================
 
-@router.get("/", response_model=list[AssignmentResponse])
+@router.get(
+    "/",
+    response_model=list[AssignmentResponse]
+)
 def list_assignments(
+    current_user: User = Depends(require_asset_operations),
     db: Session = Depends(get_db)
 ):
     return get_assignments(db)
 
 
-# ----------------------------------------------------
+# ============================================================
 # ISSUE ASSET
-# ----------------------------------------------------
+# Administrator / CO / Quarter Master / Store Keeper
+# ============================================================
 
 @router.post(
     "/issue",
@@ -45,6 +58,7 @@ def list_assignments(
 )
 def issue(
     request: AssetIssue,
+    current_user: User = Depends(require_asset_operations),
     db: Session = Depends(get_db)
 ):
     assignment = issue_asset(
@@ -69,9 +83,10 @@ def issue(
     return assignment
 
 
-# ----------------------------------------------------
+# ============================================================
 # RETURN ASSET
-# ----------------------------------------------------
+# Administrator / CO / Quarter Master / Store Keeper
+# ============================================================
 
 @router.post(
     "/return",
@@ -79,6 +94,7 @@ def issue(
 )
 def return_asset_api(
     request: AssetReturn,
+    current_user: User = Depends(require_asset_operations),
     db: Session = Depends(get_db)
 ):
     assignment = return_asset(
@@ -96,9 +112,10 @@ def return_asset_api(
     return assignment
 
 
-# ----------------------------------------------------
+# ============================================================
 # TRANSFER ASSET
-# ----------------------------------------------------
+# Administrator / CO / Quarter Master / Store Keeper
+# ============================================================
 
 @router.post(
     "/transfer",
@@ -106,6 +123,7 @@ def return_asset_api(
 )
 def transfer_asset_api(
     request: AssetTransfer,
+    current_user: User = Depends(require_asset_operations),
     db: Session = Depends(get_db)
 ):
     assignment = transfer_asset(
@@ -136,9 +154,10 @@ def transfer_asset_api(
     return assignment
 
 
-# ----------------------------------------------------
-# ASSET HISTORY
-# ----------------------------------------------------
+# ============================================================
+# ASSET ASSIGNMENT HISTORY
+# All authenticated users
+# ============================================================
 
 @router.get(
     "/history/{asset_id}",
@@ -146,6 +165,7 @@ def transfer_asset_api(
 )
 def asset_history(
     asset_id: int,
+    current_user: User = Depends(require_asset_operations),
     db: Session = Depends(get_db)
 ):
     return get_asset_history(

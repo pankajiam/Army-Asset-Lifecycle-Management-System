@@ -23,28 +23,65 @@ from app.core.auth import (
     create_access_token,
 )
 
+from app.services.auth_service import (
+    get_current_user,
+    require_admin_or_co,
+)
+
+from app.models.user import User
+
+
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
 )
 
 
-@router.post("/", response_model=UserResponse)
+# ============================================================
+# CREATE USER
+# Administrator + Commanding Officer only
+# ============================================================
+
+@router.post(
+    "/",
+    response_model=UserResponse
+)
 def create_new_user(
     user: UserCreate,
+    current_user: User = Depends(require_admin_or_co),
     db: Session = Depends(get_db)
 ):
-    return create_user(db, user)
+    return create_user(
+        db,
+        user
+    )
 
 
-@router.get("/", response_model=list[UserResponse])
+# ============================================================
+# GET ALL USERS
+# Administrator + Commanding Officer only
+# ============================================================
+
+@router.get(
+    "/",
+    response_model=list[UserResponse]
+)
 def read_users(
+    current_user: User = Depends(require_admin_or_co),
     db: Session = Depends(get_db)
 ):
     return get_users(db)
 
 
-@router.post("/login", response_model=Token)
+# ============================================================
+# LOGIN
+# Existing login preserved
+# ============================================================
+
+@router.post(
+    "/login",
+    response_model=Token
+)
 def login(
     login_data: LoginRequest,
     db: Session = Depends(get_db)
@@ -64,7 +101,9 @@ def login(
         )
 
     access_token = create_access_token(
-        {"sub": str(user.user_id)}
+        {
+            "sub": str(user.user_id)
+        }
     )
 
     return {
